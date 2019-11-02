@@ -120,7 +120,7 @@ appointment.reschedule = async function({aptDate, aptTime, aptId}) {
     const aptUpdate = `UPDATE appointments SET appoint_date = ?, appoint_hr = ?, appoint_min = ? WHERE id = ?;`;
     try {
         await execParamQuery(aptUpdate, aptParams);
-        return "Updated successfully";
+        return {aptId: aptId};
     } catch (error) {
         logger.error("appointment.js, Handlers: appointment.reschedule" + error.stack);
         throw new Error("Error while reschedule appointment. aptId:" + aptId); 
@@ -137,7 +137,7 @@ appointment.cancel = async function({aptId}) {
     const aptUpdate = `UPDATE appointments SET cancel_status='Y' WHERE id = ?;`;
     try {
         await execParamQuery(aptUpdate, aptParams);
-        return "Updated successfully.";
+        return {aptId: aptId};
     } catch (error) {
         logger.error("appointment.js, Handlers: appointment.cancel" + error.stack);
         throw new Error("Error while cancelling appointment. aptId:" + aptId); 
