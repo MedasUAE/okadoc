@@ -83,9 +83,8 @@ appointment.create = async function({
                     ?,?,?,?,?,?,?,?,sysdate(),?,?,?,?,?,?,?,?     
                 )`;
     try {
-        // const createApt = await execParamQuery(aptQuery, aptParams); 
-        // return { aptId: createApt.insertId }
-        return { aptId: "created" }
+        const createApt = await execParamQuery(aptQuery, aptParams); 
+        return { aptId: createApt.insertId }
     } catch (error) {
         logger.error("appointment.js, Handlers: appointment.create" + error.stack);
         throw new Error("Error while creating appointment."); 
