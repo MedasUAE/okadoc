@@ -16,6 +16,13 @@ appointment.create = async function({
     departmentId 
 
 }) {
+    /** 
+     * ToDo: 
+     * 1. Past Date Appointment Block
+     * 2. Multiple Appointment of same Time Block
+     * 3. Create only when OKADOC Users only
+     * 4. Create Only when Active Branch
+     * */
     logger.info("starting appointment.js, Handlers: appointment.create");
 
     //mandatory fields check
@@ -107,6 +114,10 @@ function checkDateFormat(aptDate) {
 }
 
 appointment.reschedule = async function({aptDate, aptTime, aptId}) {
+    /**
+     * ToDo:
+     * 1. Reschedule only those appoinement which are created by OKADOC
+     */
     logger.info("starting appointment.js, Handlers: appointment.reschedule");
     //mandatory field check
     if(!aptId) throw new Error("'aptId' is required for updating the appointment."); 
@@ -127,7 +138,12 @@ appointment.reschedule = async function({aptDate, aptTime, aptId}) {
     }
 }
 
-appointment.cancel = async function({aptId}) {
+appointment.cancel = async function({aptId, cancelReason}) {
+    /**
+     * ToDo: 
+     * 1. Cancel only those appointments which are created by OKADOC
+     * 2. Cancel Reason 
+     */
     logger.info("starrting appointment.js, Handlers: appointment.cancel");
     if(!aptId) throw new Error("'aptId' is required for calcelling the appointment."); 
     

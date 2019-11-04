@@ -48,7 +48,8 @@ doctor.getDoctorAvbleSlot = async function({doctorId, clinicId, aptDate}) {
         appointments WHERE 
         appoint_date = ? AND 
         doctors_id = ? AND 
-        office_id = ? 
+        office_id = ? AND 
+        cancel_status != 'Y'
         ORDER BY appoint_hr ASC`;
 
     try {
