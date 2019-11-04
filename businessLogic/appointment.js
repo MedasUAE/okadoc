@@ -50,7 +50,7 @@ appointment.create = async function({
         doctorId,
         mobileCode,
         505, // enteredby default
-        2, // slot_nos
+        1, // slot_nos
         patientEmail,
         clinicId, // office_id
         patientAge,
