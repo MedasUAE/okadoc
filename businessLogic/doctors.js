@@ -27,14 +27,35 @@ doctor.getDoctorAvbleSlot = async function ({ doctorId, clinicId, aptDate }) {
     if (!clinicId) throw new Error("'clinicId' not given.");
 
     try {
-        const doctorSlot = await doctor.getDoctorSlots({ aptDate, doctorId, clinicId });
+        const doctorSlot = await doctor.getDoctorSlots({ aptDate, doctorId, clinicId, SHOW_SLOT_INTERVAL:true });
         const bookedSlot = await doctor.getBookedSlots({ aptDate, doctorId, clinicId });
-        return { doctorSlot, bookedSlot };
+        const filterDocSlot = filterBookedSlot(doctorSlot,bookedSlot); // filter the booked slot from doctorSlots
+
+        return { doctorSlot:filterDocSlot };
     } catch (error) {
         logger.error("doctors.js, Handlers: getDoctorAvbleSlot" + error.stack);
         throw new Error("Error while getting doctor slot.");
     }
 }
+
+/**
+ * Method for filtering the doctorslot based on booked slot
+ * @param {Array} doctorSlot 
+ * @param {Array} bookedSlot 
+ */
+function filterBookedSlot(doctorSlot, bookedSlot) {
+    const checkInBetweenApt = require('./common').checkInBetweenApt;
+    doctorSlot.forEach(dSlot=>{
+        bookedSlot.forEach(bSlot => {
+            if(checkInBetweenApt(bSlot.time, bSlot.slot, dSlot.time, dSlot.slot)) {
+                dSlot.found = true;
+            }
+        });
+    });
+    return doctorSlot.filter(slot => !slot.found).map(slot => ({ time: slot.time}) );
+    // return doctorSlot;
+}
+
 
 doctor.getBookedSlots = async function ({ aptDate, doctorId, clinicId }) {
 

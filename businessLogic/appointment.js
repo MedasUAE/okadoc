@@ -38,6 +38,7 @@ appointment.create = async function({
     if(await checkBookedApt({aptDate,doctorId,clinicId,aptTime})) throw new Error(`'${aptTime}' already booked. Try another available slot.`);
     
     const execParamQuery = require('../lib/mysql').execParamQuery;
+    const getAppointMin = require('./common').getAppointMin;
     const APOINT_TYPE = require('./constants').APOINT_TYPE;
     let aptParams = [
         APOINT_TYPE, 
@@ -91,22 +92,22 @@ appointment.create = async function({
     }
 }
 
-function getAppointMin(aptTime, noOfSlots) {
-    const times = aptTime.split(":");
-    if(!times.length || times.length < 2) throw new Error("'aptTime' is not in correct format.(hh:mm)"); ; // if no length
-    let hrs = parseInt(times[0]), mins = parseInt(times[1]);
-    const SLOT_INTERVAL = 20;
-    const nextTime = mins + SLOT_INTERVAL*noOfSlots; // adding interval
+// function getAppointMin(aptTime, noOfSlots) {
+//     const times = aptTime.split(":");
+//     if(!times.length || times.length < 2) throw new Error("'aptTime' is not in correct format.(hh:mm)"); ; // if no length
+//     let hrs = parseInt(times[0]), mins = parseInt(times[1]);
+//     const SLOT_INTERVAL = 20;
+//     const nextTime = mins + SLOT_INTERVAL*noOfSlots; // adding interval
     
     
-    hrs = (nextTime >= 60) ? hrs + 1 : hrs; //hr increase by one incase of mins grater than 60
-    hrs = (hrs == 24) ? 0 : hrs; // 24 hrs check
-    mins = (nextTime >= 60) ? (nextTime - 60) : nextTime; // if mins > 60
+//     hrs = (nextTime >= 60) ? hrs + 1 : hrs; //hr increase by one incase of mins grater than 60
+//     hrs = (hrs == 24) ? 0 : hrs; // 24 hrs check
+//     mins = (nextTime >= 60) ? (nextTime - 60) : nextTime; // if mins > 60
     
-    hrs = (hrs < 10) ? "0" + hrs.toString() : hrs.toString(); //padding to Zero
-    mins = (mins < 10) ? "0" + mins.toString() : mins.toString(); //padding Zero
-    return hrs + ":" + mins;
-}
+//     hrs = (hrs < 10) ? "0" + hrs.toString() : hrs.toString(); //padding to Zero
+//     mins = (mins < 10) ? "0" + mins.toString() : mins.toString(); //padding Zero
+//     return hrs + ":" + mins;
+// }
 
 // function getAppointMin(aptTime) {
 //     const times = aptTime.split(":");
@@ -125,19 +126,19 @@ function getAppointMin(aptTime, noOfSlots) {
 //     return hrs + ":" + mins;
 // }
 
-function checkInBetweenApt(bookedAptTime, noOfSlots, reqAptTime){
-    let found = false
-    if(!noOfSlots) noOfSlots = 0;
-    // loop for the slots to check if appointment time is in between the booked slot
-    while(noOfSlots>0){
-        noOfSlots--;
-        if(getAppointMin(bookedAptTime,noOfSlots) == reqAptTime){
-            found = true;
-            noOfSlots = 0;
-        }
-    }
-    return found;
-}
+// function checkInBetweenApt(bookedAptTime, noOfSlots, reqAptTime){
+//     let found = false
+//     if(!noOfSlots) noOfSlots = 0;
+//     // loop for the slots to check if appointment time is in between the booked slot
+//     while(noOfSlots>0){
+//         noOfSlots--;
+//         if(getAppointMin(bookedAptTime,noOfSlots) == reqAptTime){
+//             found = true;
+//             noOfSlots = 0;
+//         }
+//     }
+//     return found;
+// }
 
 function checkDateFormat(aptDate) {
     const d = aptDate.toString();
@@ -150,6 +151,7 @@ function checkDateFormat(aptDate) {
 
 async function checkBookedApt({aptDate, doctorId, clinicId, aptTime}) {
     const getBookedSlots = require('./doctors').getBookedSlots;
+    const checkInBetweenApt = require('./common').checkInBetweenApt;
     const bookedSlots = await getBookedSlots({aptDate, doctorId, clinicId});
     const foundSlot = bookedSlots.filter( slot => (slot.time == aptTime || checkInBetweenApt(slot.time, slot.slot, aptTime)))
     if(foundSlot.length) return true;
@@ -163,7 +165,8 @@ async function checkBookedApt({aptDate, doctorId, clinicId, aptTime}) {
 async function checkCorrectSlot({aptDate, doctorId, clinicId, aptTime}) {
     const getDoctorSlots = require('./doctors').getDoctorSlots;
     const doctorSlots = await getDoctorSlots({aptDate, doctorId, clinicId});
-    const foundSlot = doctorSlots.filter(slot => (slot.time == aptTime))
+    const foundSlot = doctorSlots.filter(slot => (slot.time == aptTime));
+
     if(foundSlot.length) return true; //return 'true' if slot is correct and matches
     else return false; //return 'false' if slot is NOT correct and matches
 }
@@ -178,7 +181,8 @@ appointment.reschedule = async function({aptDate, aptTime, aptId}) {
     if(!aptId) throw new Error("'aptId' is required for updating the appointment."); 
     if(!aptTime) throw new Error("'aptTime' is required for updating the appointment.");
     if(!aptDate) throw new Error("'aptDate' is required for updating the appointment.");
-    
+
+    const getAppointMin = require('./common').getAppointMin;
     checkDateFormat(aptDate) //to check the format.
     let aptParams = [aptDate,aptTime, getAppointMin(aptTime), aptId];
     const execParamQuery = require('../lib/mysql').execParamQuery;
