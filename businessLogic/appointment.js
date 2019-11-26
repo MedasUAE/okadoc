@@ -219,4 +219,42 @@ appointment.cancel = async function({aptId, cancelReason}) {
     }
 }
 
+appointment.get= async function({appoint_date,doctors_id}) {
+    if(!appoint_date) throw new Error("Please send appointment Date");
+    if(!doctors_id) throw new Error("Please Send doctors Id");
+    const execParamQuery = require('../lib/mysql').execParamQuery;
+    let aptParams = [appoint_date,doctors_id];
+    let query = `SELECT 
+        id aptId,
+        doctors_id doctorId,
+        office_id clinicId,
+        concat(trim(mobile_code), '',trim(mobile)) mobile,
+        appoint_hr aptTime,
+        DATE_FORMAT(appoint_date, "%Y-%m-%d") aptDate,
+        appoint_name patientName,
+        date_of_birth dob,
+        patient_email email,
+        sex gender
+    FROM  
+        appointments
+    WHERE 
+        appoint_date=? 
+    AND
+        doctors_id=?
+    AND
+        cancel_status='N'`;
+
+    try {
+        const aptResult = await execParamQuery(query,aptParams);
+        console.log(aptResult);
+        return {list:aptResult}
+        
+    } catch (error) {
+        logger.error("appointment.js, Handlers: appointment.get" + error.stack);
+        throw new Error("Error while getting appointment."); 
+    }
+
+
+}
+
 module.exports = appointment;
