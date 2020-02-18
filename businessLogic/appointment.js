@@ -219,11 +219,11 @@ appointment.cancel = async function({aptId, cancelReason}) {
     }
 }
 
-appointment.get= async function({appoint_date,doctors_id}) {
-    if(!appoint_date) throw new Error("Please send appointment Date");
-    if(!doctors_id) throw new Error("Please Send doctors Id");
+appointment.get= async function({aptDate,doctorId}) {
+    if(!aptDate) throw new Error("Please send aptDate");
+    if(!doctorId) throw new Error("Please Send doctorId");
     const execParamQuery = require('../lib/mysql').execParamQuery;
-    let aptParams = [appoint_date,doctors_id];
+    let aptParams = [aptDate,doctorId];
     let query = `SELECT 
         id aptId,
         doctors_id doctorId,
