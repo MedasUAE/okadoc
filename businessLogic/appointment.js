@@ -43,7 +43,7 @@ appointment.create = async function({
     let aptParams = [
         APOINT_TYPE, 
         aptTime, // appoint_hr
-        getAppointMin(aptTime), // appoint_min
+        getAppointMin(aptTime, 1), // appoint_min
         remarks, // appoint_purpose
         aptDate, 
         patientName, // appoint_name
@@ -84,8 +84,9 @@ appointment.create = async function({
                     ?,?,?,?,?,?,?,?,sysdate(),?,?,?,?,?,?,?,?     
                 )`;
     try {
-        const createApt = await execParamQuery(aptQuery, aptParams); 
-        return { aptId: createApt.insertId }
+        //const createApt = await execParamQuery(aptQuery, aptParams); 
+        //return { aptId: createApt.insertId }
+        return { aptId: 123 }
     } catch (error) {
         logger.error("appointment.js, Handlers: appointment.create" + error.stack);
         throw new Error("Error while creating appointment."); 
@@ -150,10 +151,13 @@ function checkDateFormat(aptDate) {
 }
 
 async function checkBookedApt({aptDate, doctorId, clinicId, aptTime}) {
+    logger.debug("starting appointment.js, checkBookedApt params aptDate: " + aptDate + "doctorId: " + doctorId + "clinicId: " + clinicId + "aptTime: " + aptTime)
     const getBookedSlots = require('./doctors').getBookedSlots;
     const checkInBetweenApt = require('./common').checkInBetweenApt;
     const bookedSlots = await getBookedSlots({aptDate, doctorId, clinicId});
+    logger.debug("bookedSlots" + bookedSlots);
     const foundSlot = bookedSlots.filter( slot => (slot.time == aptTime || checkInBetweenApt(slot.time, slot.slot, aptTime)))
+    logger.debug("foundSlot" + foundSlot);
     if(foundSlot.length) return true;
     else return false;
 }
