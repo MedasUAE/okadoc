@@ -32,7 +32,7 @@ appointment.create = async function({
     if(!aptTime) throw new Error("'aptTime' is required for creating the appointment."); 
     if(!patientName) throw new Error("'patientName' is required for creating the appointment.");
     if(!departmentId) throw new Error("'departmentId' is required for creating the appointment.");
-    const enteredBy = require('../config/config').enteredBy[clinicId]
+    const enteredBy = require('../config/config').enteredBy
     if(!enteredBy) throw new Error("OkaDoc user not created. Kindly contact MEdas Team.");
     
     //checking time from doctor master slot
