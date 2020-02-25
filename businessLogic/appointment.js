@@ -22,6 +22,7 @@ appointment.create = async function({
      * 2. Create only when OKADOC Users only
      * 3. Create Only when Active Branch
      * */
+
     logger.info("starting appointment.js, Handlers: appointment.create");
 
     //mandatory fields check
@@ -31,6 +32,8 @@ appointment.create = async function({
     if(!aptTime) throw new Error("'aptTime' is required for creating the appointment."); 
     if(!patientName) throw new Error("'patientName' is required for creating the appointment.");
     if(!departmentId) throw new Error("'departmentId' is required for creating the appointment.");
+    const enteredBy = require('../config/config').enteredBy[clinicId]
+    if(!enteredBy) throw new Error("OkaDoc user not created. Kindly contact MEdas Team.");
     
     //checking time from doctor master slot
     if(!(await checkCorrectSlot({aptDate,doctorId,clinicId,aptTime}))) throw new Error(`Please select available slot. '${aptTime}' is not in available slot.`);
@@ -50,7 +53,7 @@ appointment.create = async function({
         mobile,  
         doctorId,
         mobileCode,
-        505, // enteredby default
+        enteredBy, // enteredby default
         1, // slot_nos
         patientEmail,
         clinicId, // office_id
@@ -84,9 +87,9 @@ appointment.create = async function({
                     ?,?,?,?,?,?,?,?,sysdate(),?,?,?,?,?,?,?,?     
                 )`;
     try {
-        const createApt = await execParamQuery(aptQuery, aptParams); 
-        return { aptId: createApt.insertId }
-        // return { aptId: 123 }
+        // const createApt = await execParamQuery(aptQuery, aptParams); 
+        // return { aptId: createApt.insertId }
+        return { aptId: 123 }
     } catch (error) {
         logger.error("appointment.js, Handlers: appointment.create" + error.stack);
         throw new Error("Error while creating appointment."); 
