@@ -240,9 +240,9 @@ appointment.get= async function({aptDate,doctorId}) {
         DATE_FORMAT(appoint_date, "%Y-%m-%d") aptDate,
         appoint_status aptStatus,
         appoint_name patientName,
-        sex gender
+        sex gender,
         date_of_birth dob,
-        patient_email email,
+        patient_email email
     FROM  
         appointments
     WHERE 
