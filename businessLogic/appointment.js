@@ -13,8 +13,8 @@ appointment.create = async function({
     clinicId,
     patientAge,
     sex,
-    departmentId 
-
+    departmentId,
+    fileNumber
 }) {
     /** 
      * ToDo: 
@@ -59,7 +59,8 @@ appointment.create = async function({
         clinicId, // office_id
         patientAge,
         sex,
-        departmentId 
+        departmentId,
+        fileNumber //Patient OP Number 
     ];
 
     aptQuery = `INSERT INTO appointments
@@ -80,11 +81,12 @@ appointment.create = async function({
                     office_id,
                     patient_age,
                     sex,
-                    department_id           
+                    department_id,
+                    op_number          
                 )
                 VALUES
                 (
-                    ?,?,?,?,?,?,?,?,sysdate(),?,?,?,?,?,?,?,?     
+                    ?,?,?,?,?,?,?,?,sysdate(),?,?,?,?,?,?,?,?,?   
                 )`;
     try {
         const createApt = await execParamQuery(aptQuery, aptParams); 

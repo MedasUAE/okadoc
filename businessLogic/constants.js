@@ -1,5 +1,5 @@
 const appointmentConst = {
-    APOINT_TYPE: "Consultation",
+    APOINT_TYPE: "TeleConsult",
     SLOT_INTERVAL: 15
 }
 
