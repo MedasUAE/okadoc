@@ -3,18 +3,39 @@ const common = {};
 
 common.checkInBetweenApt = function(bookedAptTime, noOfSlots, reqAptTime, slot_interval){
     let args = [...arguments];
-    logger.debug("Starting common.js, Handler: checkInBetweenApt with params: bookedAptTime, noOfSlots, reqAptTime, slot_interval: " + args.join(','))
-    let found = false
+    //logger.debug("Starting common.js, Handler: checkInBetweenApt with params: bookedAptTime, noOfSlots, reqAptTime, slot_interval: " + args.join(','))
+    let found = false;
     console.log(noOfSlots + "----------");
     if(!noOfSlots) noOfSlots = 0;
     // loop for the slots to check if appointment time is in between the booked slot
     while(noOfSlots>0){
         noOfSlots--;
-        if(common.getAppointMin(bookedAptTime, noOfSlots, slot_interval) == reqAptTime){
+       /*if(common.getAppointMin(bookedAptTime, noOfSlots, slot_interval) == reqAptTime)
+        {
+            found = true;
+            noOfSlots = 0;
+        }*/
+        if(bookedAptTime == reqAptTime)
+        {
             found = true;
             noOfSlots = 0;
         }
+        else if(common.slot_check(bookedAptTime, noOfSlots, slot_interval) == reqAptTime)
+        {
+            found = true;
+            noOfSlots = 0;
+        }
+        else
+        {
+            found= false;
+        }
+        
+        
+   // logger.debug("checker=="+common.slot_check(bookedAptTime, noOfSlots, slot_interval)+"--"+reqAptTime);
+            //noOfSlots = 0;
+        
     }
+   // logger.debug("found out flag="+found);
     return found;
 }
 
@@ -38,6 +59,51 @@ common.getAppointMin = function(aptTime, noOfSlots, SLOT_INTERVAL) {
     mins = (mins < 10) ? "0" + mins.toString() : mins.toString(); //padding Zero
     logger.debug("returning - hrs : mins;" + hrs + ":" + mins)
     return hrs + ":" + mins;
+}
+
+
+common.slot_check=function(booktime,nslots,slot_interval) 
+{
+   let convert_slot=end_time='';
+   convert_slot=slot_convert(nslots,slot_interval);
+   end_time=add_with_slots(convert_slot,booktime);
+   return end_time;
+
+}
+
+function slot_convert(nslots,slot_interval) 
+{
+    let slot_time='';
+    slot_time=slot_interval*nslots;
+    slot_time=String(parseInt(slot_time/60)+":"+parseInt(slot_time%60));
+    return slot_time;
+}
+
+
+function add_with_slots(slot_time,booktime)
+{
+    let slot_end='';
+    let slot_min=slot_hr=0;
+    slot_time=String(slot_time).split(":");
+    booktime=String(booktime).split(":");
+    slot_min=parseInt(slot_time[1])+parseInt(booktime[1]);
+    slot_hr=parseInt(slot_time[0])+parseInt(booktime[0]);
+    if(slot_min>59)
+    {
+        if(slot_min==60){slot_min=String("00");slot_hr+=1;}
+        else
+        {
+            slot_min-=60;
+            slot_hr+=1;
+        }
+         slot_end=String(slot_hr)+":"+String(slot_min);
+    }
+    else
+    {
+        slot_end=String(slot_hr)+":"+String(slot_min);
+    }
+    return slot_end;
+
 }
 
 module.exports = common;

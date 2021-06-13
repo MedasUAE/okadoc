@@ -25,13 +25,25 @@ doctor.getDoctorAvbleSlot = async function ({ doctorId, clinicId, aptDate }) {
     if (!aptDate) throw new Error("'aptDate' not given.");
     if (!doctorId) throw new Error("'doctorId' not given.");
     if (!clinicId) throw new Error("'clinicId' not given.");
+    let daily_slot;
 
     try {
         const doctorSlot = await doctor.getDoctorSlots({ aptDate, doctorId, clinicId, SHOW_SLOT_INTERVAL:true });
         const bookedSlot = await doctor.getBookedSlots({ aptDate, doctorId, clinicId });
-        const filterDocSlot = filterBookedSlot(doctorSlot,bookedSlot); // filter the booked slot from doctorSlots
-
-        return { doctorSlot:filterDocSlot };
+       //logger.debug("doc 1="+JSON.stringify(doctorSlot));
+        //const blockedSlot=await doctor.getBlockedSlots({ aptDate, doctorId, clinicId });
+        //const filterDocSlot = filterBookedSlot(doctorSlot,bookedSlot,blockedSlot); // filter the booked slot from doctorSlots
+       
+        if(bookedSlot.length>0)
+        {
+        const filterDocSlot = filterBookedSlot(doctorSlot,bookedSlot);
+        daily_slot= { doctorSlot:filterDocSlot};
+        }
+        else
+        {
+          daily_slot= { doctorSlot:doctorSlot}; 
+        }
+        return daily_slot;
     } catch (error) {
         logger.error("doctors.js, Handlers: getDoctorAvbleSlot" + error.stack);
         throw new Error("Error while getting doctor slot.");
@@ -44,16 +56,25 @@ doctor.getDoctorAvbleSlot = async function ({ doctorId, clinicId, aptDate }) {
  * @param {Array} bookedSlot 
  */
 function filterBookedSlot(doctorSlot, bookedSlot) {
+    let i=1;
     const checkInBetweenApt = require('./common').checkInBetweenApt;
+
     doctorSlot.forEach(dSlot=>{
         bookedSlot.forEach(bSlot => {
             if(checkInBetweenApt(bSlot.time, bSlot.slot, dSlot.time, dSlot.slot)) {
+                //logger.debug("slot time"+dSlot.time);
+                //logger.debug("slot time"+(i++));
                 dSlot.found = true;
             }
         });
     });
-    return doctorSlot.filter(slot => !slot.found).map(slot => ({ time: slot.time}) );
-    // return doctorSlot;
+    
+      
+       //logger.debug(validate_block(slot.time,blockedSlot));
+  return doctorSlot.filter(slot => !slot.found).map(slot => ({ time: slot.time}) );
+  //return doctorSlot.filter(slot => !slot.found && validate_block(slot.time,blockedSlot)=="true").map(slot => ({ time: slot.time}) );
+  
+    //return doctorSlot;
 }
 
 
@@ -126,5 +147,78 @@ doctor.getDoctorSlots = async function ({ aptDate, doctorId, clinicId, SHOW_SLOT
     }
 
 }
+
+
+/*doctor.getBlockedSlots = async function ({ aptDate, doctorId, clinicId }) {
+
+    if (!aptDate) throw new Error("'aptDate' not given.");
+    if (!doctorId) throw new Error("'doctorId' not given.");
+    if (!clinicId) throw new Error("'clinicId' not given.");
+    const aptQuery = `select appoint_hr,appoint_min from appointments
+where appoint_date =?
+and doctors_id=?
+and appoint_name=`+`"BLOCKED"`;
+
+    let aptParams = [];
+
+    //params for aptParams
+    aptParams.push(aptDate); //param for appoint_date 
+    aptParams.push(doctorId); //param for doctors_id 
+    //aptParams.push(clinicId); //param for office_id
+
+    try {
+        const blockedSlot = await execParamQuery(aptQuery, aptParams);
+        return blockedSlot;
+    } catch (error) {
+        logger.error("doctors.js, Handlers: getBlokedSlots" + error.stack);
+        throw new Error("Error while getting doctor bloked slot.");
+    }
+
+}
+
+function validate_block(slot_time,blockedSlot) 
+{
+
+    let sl_hr=String(slot_time).split(":");
+    let blocked,st_time,sp_time,start_t,stop_t;
+    blocked=new Array();
+    st_time=new Array();
+    sp_time=new Array();
+    let k;
+    let i=m=0;
+    
+    blockedSlot.forEach(blSlot=>{
+
+       st_time[i]= String(blSlot.appoint_hr);
+       sp_time[i++]= String(blSlot.appoint_min);
+        m=i;
+
+    });
+
+    for(i=0;i<m;i++)
+    {
+        start_t=String(st_time[i]).split(":");
+        stop_t=String(sp_time[i]).split(":");
+        if(sl_hr[0]>=start_t[0]&&sl_hr[0]<=stop_t[0])
+        {
+            if((sl_hr[0]==stop_t[0]&&sl_hr[1]>stop_t[1])||(sl_hr[0]==start_t[0]&&sl_hr[1]<start_t[1]))
+            {
+                k="true";
+            }
+            else
+            {
+               k="false" 
+            }
+          
+            
+        }
+        else
+        {
+            k="true";
+        }
+    }
+  
+  return k;
+}*/
 
 module.exports = doctor;
